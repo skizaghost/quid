@@ -1,0 +1,66 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             Int           @id @default(autoincrement())
+  name           String
+  email          String        @unique
+  password       String
+  phone_number   String
+  is_admin       Boolean
+  is_client      Boolean       @default(true)
+  created_at     DateTime      @default(now())
+  update_at      DateTime      @updatedAt
+  Subscription   Subscription? @relation(fields: [subscriptionId], references: [id])
+  subscriptionId Int?
+  AudioFile      AudioFile[]
+  AudioScript    AudioScript[]
+}
+
+model AudioFile {
+  id           Int            @id @default(autoincrement())
+  name         String
+  level        Level
+  owner        User           @relation(fields: [userId], references: [id])
+  author       String         @default("")
+  userId       Int
+  location     String
+  Subscription Subscription[]
+  AudioScript  AudioScript[]
+}
+
+model Subscription {
+  id          Int       @id @default(autoincrement())
+  user_id     Int
+  User        User[]
+  audio_file  AudioFile @relation(fields: [audioFileId], references: [id])
+  audioFileId Int
+}
+
+model AudioScript {
+  id          Int        @id @default(autoincrement())
+  title       String     @default("")
+  script      String
+  user        User       @relation(fields: [userId], references: [id])
+  userId      Int
+  is_paid     Boolean    @default(false)
+  audio_file  AudioFile? @relation(fields: [audioFileId], references: [id])
+  audioFileId Int?
+  created_at  DateTime   @default(now())
+  update_at   DateTime   @updatedAt
+}
+
+enum Level {
+  GOLD
+  SILVER
+  PLATINUMN
+}
